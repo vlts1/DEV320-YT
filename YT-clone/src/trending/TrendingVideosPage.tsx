@@ -1,12 +1,13 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
-import { faCommentAlt, faThumbsUp } from '@fortawesome/free-solid-svg-icons'
+import { faCommentAlt, faFireFlameCurved, faThumbsUp } from '@fortawesome/free-solid-svg-icons';
+import { PageTitle, PageTitleIcon } from '../styles';
 
 const PageContainer = styled.div`
   font-family: 'Roboto', sans-serif;
-  padding: 20px;
-  text-align: center;
+  text-align: start;
   background-color: #181818;
   color: white;
   min-height: 100vh;
@@ -27,6 +28,7 @@ const ThumbnailContainer = styled.div`
   padding: 10px;
   border-radius: 8px;
   transition: transform 0.3s ease-in-out;
+  cursor: pointer;
 
   &:hover {
     transform: scale(1.05);
@@ -36,7 +38,6 @@ const ThumbnailContainer = styled.div`
 const ThumbnailImage = styled.img`
   width: 100%;
   height: auto;
-  max-width: 320px;
   border-radius: 8px;
   object-fit: cover;
   cursor: pointer;
@@ -117,6 +118,7 @@ const Button = styled.button`
 `;
 
 interface VideoThumbnailProps {
+  id: string;
   title: string;
   thumbnailUrl: string;
   channelTitle: string;
@@ -126,28 +128,33 @@ interface VideoThumbnailProps {
   commentCount: string;
 }
 
-const VideoThumbnail: React.FC<VideoThumbnailProps> = ({ title, thumbnailUrl, channelTitle, channelAvatar, views, likes, commentCount }) => (
-  <ThumbnailContainer>
-    <ThumbnailImage src={thumbnailUrl} alt={title} />
-    <VideoTitle>{title}</VideoTitle>
-    <VideoStats>
-      <span>{views} views</span>
-      <LikesDislikes>
-        <FontAwesomeIcon icon={faThumbsUp} /> {likes}
-        <FontAwesomeIcon icon={faCommentAlt} /> {commentCount}
-      </LikesDislikes>
-    </VideoStats>
-    <ChannelInfo>
-      <ChannelAvatar src={channelAvatar} alt={channelTitle} />
-      {channelTitle}
-    </ChannelInfo>
-  </ThumbnailContainer>
-);
+const VideoThumbnail: React.FC<VideoThumbnailProps> = ({ id, title, thumbnailUrl, channelTitle, channelAvatar, views, likes, commentCount }) => {
+  const navigate = useNavigate();
+  const handleClick = () => navigate(`/play/${id}`);
+
+  return (
+    <ThumbnailContainer onClick={handleClick}>
+      <ThumbnailImage src={thumbnailUrl} alt={title} />
+      <VideoTitle>{title}</VideoTitle>
+      <VideoStats>
+        <span>{views} views</span>
+        <LikesDislikes>
+          <FontAwesomeIcon icon={faThumbsUp} /> {likes}
+          <FontAwesomeIcon icon={faCommentAlt} /> {commentCount}
+        </LikesDislikes>
+      </VideoStats>
+      <ChannelInfo>
+        <ChannelAvatar src={channelAvatar} alt={channelTitle} />
+        {channelTitle}
+      </ChannelInfo>
+    </ThumbnailContainer>
+  );
+};
 
 const VideosGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: 16px;
+  gap: 20px;
   justify-content: center;
   padding: 20px;
   max-width: 100vw;
@@ -170,7 +177,6 @@ export const TrendingVideosPage: React.FC = () => {
   const [nextPageToken, setNextPageToken] = useState<string | null>(null);
   const [prevPageToken, setPrevPageToken] = useState<string | null>(null);
 
-
   const fetchTrendingVideos = async (pageToken?: string) => {
     try {
       const apiKey = import.meta.env.VITE_YT_API_KEY;
@@ -184,18 +190,15 @@ export const TrendingVideosPage: React.FC = () => {
         title: item.snippet.title,
         thumbnailUrl: item.snippet.thumbnails.medium.url,
         channelTitle: item.snippet.channelTitle,
-        channelAvatar: item.snippet.thumbnails.default.url,
+        channelAvatar: item.snippet.channelThumbnailUrl || item.snippet.thumbnails.high.url,
         views: item.statistics.viewCount.toLocaleString(),
         likes: item.statistics.likeCount ? item.statistics.likeCount.toLocaleString() : '0',
         commentCount: item.statistics.commentCount ? item.statistics.commentCount.toLocaleString() : '0',
       }));
 
-      data.items.map((item: any) => ( console.log(item) ));
-
       setVideos(videosData);
       setNextPageToken(data.nextPageToken || null);
       setPrevPageToken(data.prevPageToken || null);
-
     } catch (error) {
       console.error('Error fetching trending videos:', error);
     }
@@ -207,29 +210,16 @@ export const TrendingVideosPage: React.FC = () => {
 
   return (
     <PageContainer>
-      <div style={{height: "20px"}}></div>
-      <h1>YT Clone by Team 6</h1>
+      <PageTitle>Trending<PageTitleIcon icon={faFireFlameCurved}/></PageTitle>
       <VideosGrid>
         {videos.map((video) => (
-          <VideoThumbnail
-            key={video.id}
-            title={video.title}
-            thumbnailUrl={video.thumbnailUrl}
-            channelTitle={video.channelTitle}
-            channelAvatar={video.channelAvatar}
-            views={video.views}
-            likes={video.likes}
-            commentCount={video.commentCount}
-          />
+          <VideoThumbnail key={video.id} {...video} />
         ))}
       </VideosGrid>
+      <div style={{height: "5rem"}}></div>
       <PaginationControls>
-        <Button onClick={() => fetchTrendingVideos(prevPageToken!)} disabled={!prevPageToken}>
-          Previous
-        </Button>
-        <Button onClick={() => fetchTrendingVideos(nextPageToken!)} disabled={!nextPageToken}>
-          Next
-        </Button>
+        <Button onClick={() => fetchTrendingVideos(prevPageToken!)} disabled={!prevPageToken}>Previous</Button>
+        <Button onClick={() => fetchTrendingVideos(nextPageToken!)} disabled={!nextPageToken}>Next</Button>
       </PaginationControls>
     </PageContainer>
   );
