@@ -2,7 +2,7 @@ import { faHeartBroken, faStar, faThumbsUp } from "@fortawesome/free-solid-svg-i
 import { PageTitle, PageTitleIcon } from "../styles";
 import { FavoritesManager } from "../FavoritesManager";
 import { useNavigate } from "react-router-dom";
-import { ChannelAvatar, ChannelInfo, LikesDislikes, ThumbnailContainer, ThumbnailImage, VideoStats, VideoTitle } from "../trending/styles";
+import { ChannelAvatar, ChannelInfo, LikesDislikes, ThumbnailContainer, ThumbnailImage, VideoStats, VideoTitle } from "../styles";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCommentAlt } from "@fortawesome/free-regular-svg-icons";
 import { useEffect, useState } from "react";
@@ -14,7 +14,7 @@ const VideosGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fit, 320px);
   gap: 20px;
-  justify-content: left;
+  justify-content: center;
   padding: 20px;
   overflow-x: hidden;
 `;

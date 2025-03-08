@@ -3,7 +3,8 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { faCommentAlt, faFireFlameCurved, faThumbsUp } from '@fortawesome/free-solid-svg-icons';
 import { PageTitle, PageTitleIcon } from '../styles';
-import { ThumbnailContainer, ThumbnailImage, VideoTitle, VideoStats, LikesDislikes, ChannelInfo, ChannelAvatar, PageContainer, PaginationControls, Button, VideosGrid } from './styles';
+import { ThumbnailContainer, ThumbnailImage, VideoTitle, VideoStats, LikesDislikes, ChannelInfo, ChannelAvatar, PaginationControls, Button, VideosGrid } from '../styles';
+import { PageContainer } from './styles';
 
 interface VideoThumbnailProps {
   id: string;
