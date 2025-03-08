@@ -1,135 +1,10 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { faCheck, faCommentAlt, faStar, faThumbsUp } from '@fortawesome/free-solid-svg-icons';
 import { useParams } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { FavoritesManager } from '../FavoritesManager';
-
-const PageContainer = styled.div`
-  font-family: 'Roboto', sans-serif;
-  padding: 20px;
-  text-align: center;
-  background-color: #181818;
-  color: white;
-  min-height: 100vh;
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  width: 100vw;
-  overflow-x: hidden;
-  overflow-y: auto;
-`;
-
-const VideoFrame = styled.iframe`
-  width: 80%;
-  max-width: 1200px;
-  height: 450px;
-  border: none;
-  border-radius: 8px;
-  margin-top: 20px;
-`;
-
-const VideoTitle = styled.h2`
-  font-size: 20px;
-  margin: 15px auto;
-  margin-bottom: 0;
-  text-align: left;
-  width: 80%;
-  max-width: 1200px;
-`;
-
-const VideoStats = styled.div`
-  width: 80%;
-  max-width: 1200px;
-  margin: 0 auto;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-size: 14px;
-  color: gray;
-`;
-
-const LikesComments = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  color: white;
-`;
-
-const ChannelInfo = styled.div`
-  width: 80%;
-  max-width: 1200px;
-  margin: 0 auto;
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  font-size: 14px;
-  color: white;
-  margin-top: 0px;
-`;
-
-const ChannelAvatar = styled.img`
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-  margin-right: 10px;
-`;
-
-const CommentsContainer = styled.div`
-  width: 80%;
-  max-width: 1200px;
-  margin: 20px auto;
-  text-align: left;
-  margin-top: 2.5rem;
-  text-align: left;
-`;
-
-const Comment = styled.div`
-  background-color: #222;
-  padding: 10px;
-  border-radius: 5px;
-  margin-bottom: 10px;
-`;
-
-const CommentHeader = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-weight: bold;
-`;
-
-const CommentAvatar = styled.img`
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-`;
-
-const PaginationControls = styled.div`
-  display: flex;
-  justify-content: center;
-  margin-top: 20px;
-`;
-
-const Button = styled.button`
-  background-color: #ff0000;
-  color: white;
-  border: none;
-  padding: 10px 15px;
-  font-size: 16px;
-  border-radius: 5px;
-  margin: 5px;
-  transition: background-color 0.2s;
-  cursor: pointer;
-
-  &:hover {
-    background-color: #cc0000;
-  }
-
-  &:disabled {
-    background-color: #444;
-    cursor: not-allowed;
-  }
-`;
+import { PageContainer, VideoTitle, VideoStats, LikesComments, Button, ChannelInfo, ChannelAvatar, CommentsContainer, CommentHeader, CommentAvatar, PaginationControls } from './styles';
 
 interface VideoData {
   title: string;
@@ -146,6 +21,22 @@ interface CommentData {
   authorAvatar: string;
   text: string;
 }
+
+const VideoFrame = styled.iframe`
+  width: 80%;
+  max-width: 1200px;
+  height: 450px;
+  border: none;
+  border-radius: 8px;
+  margin-top: 20px;
+`;
+
+const Comment = styled.div`
+  background-color: #222;
+  padding: 10px;
+  border-radius: 5px;
+  margin-bottom: 10px;
+`;
 
 export const VideoPlayer: React.FC = () => {
   const favoritesManager = new FavoritesManager();
@@ -194,7 +85,12 @@ export const VideoPlayer: React.FC = () => {
           `https://www.googleapis.com/youtube/v3/commentThreads?part=snippet&videoId=${videoId}&maxResults=5&key=${apiKey}${pageToken ? `&pageToken=${pageToken}` : ''}`
         );
         const data = await response.json();
-        console.log(data);
+        
+        if (response.status === 403) {
+          setComments([{ id: 'error', author: 'Error', authorAvatar: '', text: 'Comments are disabled for this video.' }]);
+          return;
+        }
+
         setComments(prevComments => [...prevComments, ...data.items.map((item: any) => ({
           id: item.id,
           author: item.snippet.topLevelComment.snippet.authorDisplayName,
@@ -233,7 +129,7 @@ export const VideoPlayer: React.FC = () => {
           </ChannelInfo>
           <CommentsContainer>
             <h3>Comments</h3>
-            {comments.map(comment => (
+            { (comments.length > 0 && comments[0].id !== "error") ? comments.map(comment => (
               <Comment key={comment.id}>
                 <CommentHeader>
                   <CommentAvatar src={comment.authorAvatar} alt={comment.author} />
@@ -241,7 +137,7 @@ export const VideoPlayer: React.FC = () => {
                 </CommentHeader>
                 <p dangerouslySetInnerHTML={{ __html: comment.text }}></p>
               </Comment>
-            ))}
+            )) : <p>Comments are disabled</p>}
             <PaginationControls>
             <Button onClick={() => {
                 if (nextPageToken) {
@@ -265,7 +161,7 @@ export const VideoPlayer: React.FC = () => {
                   };
                   fetchMoreComments();
                 }
-              }} disabled={!nextPageToken}>Load More</Button>
+              }} disabled={!nextPageToken || comments[0].id === "error"}>Load More</Button>
             </PaginationControls>
           </CommentsContainer>
         </>
@@ -273,4 +169,3 @@ export const VideoPlayer: React.FC = () => {
     </PageContainer>
   );
 };
-
