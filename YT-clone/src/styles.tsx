@@ -3,18 +3,56 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import styled from "styled-components";
 
+export const MOBILE_WIDTH = "768px";
+export const APP_BAR_HEIGHT = "3.5rem";
+
+export const AppBar = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-left: 2rem;
+  padding-right: 2rem;
+  background-color: #202020;
+  color: white;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: ${APP_BAR_HEIGHT};
+  z-index: 1000;
+`;
+
 export const PageTitle = styled.h1`
-    padding-left: 2rem; 
-    padding-top: 1rem; 
-    font-size: 2rem;
-    color: white;
+  padding-left: 2rem; 
+  padding-top: 1rem; 
+  font-size: 2rem;
+  color: white;
 `;
 
 export const PageTitleIcon = styled(FontAwesomeIcon)`
-    font-size: 1.6rem;
-    color: red;
-    vertical-align: 0%;
-    padding-left: .6rem;
+  font-size: 1.6rem;
+  color: red;
+  vertical-align: 0%;
+  padding-left: .6rem;
+`;
+
+export const Logo = styled.a`
+  font-weight: bold;
+  color: #ff2f2f;
+  margin: 0;
+  cursor: pointer;
+  text-decoration: none;
+  font-size: 1.6rem; 
+  vertical-align: bottom;
+`;
+
+export const UserIcon = styled(FontAwesomeIcon)`
+  font-size: 24px;
+  color: white;
+  cursor: pointer;
+  margin-right: 3.5rem;
+  cursor: pointer;
+  color: white;
 `;
 
 export const ThumbnailContainer = styled.div`
