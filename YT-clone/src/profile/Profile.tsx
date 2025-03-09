@@ -62,10 +62,10 @@ export const Profile = () => {
         <div>
             <PageTitle>Profile<PageTitleIcon icon={faStar}/></PageTitle>
             {<VideosGrid>
-                {videos.map((video) => (
-                  <VideoThumbnail key={video.id} {...video} />
-                ))}
-              </VideosGrid>}
+              {videos.map((video) => (
+                <VideoThumbnail key={video.id} {...video} />
+              ))}
+            </VideosGrid>}
         </div>
     );
 };

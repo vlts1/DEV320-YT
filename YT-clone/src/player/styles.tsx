@@ -11,7 +11,7 @@ export const PageContainer = styled.div`
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  width: 100vw;
+  width: 99vw;
   overflow-x: hidden;
   overflow-y: auto;
 `;
