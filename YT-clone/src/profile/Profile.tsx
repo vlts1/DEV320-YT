@@ -5,19 +5,11 @@ import { useNavigate } from "react-router-dom";
 import { ChannelAvatar, ChannelInfo, LikesDislikes, ThumbnailContainer, ThumbnailImage, VideoStats, VideoTitle } from "../styles";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCommentAlt } from "@fortawesome/free-regular-svg-icons";
-import styled from "styled-components";
 import { useFetchFavoriteVideos } from "../hooks/useFetchFavoriteVideos";
+import { VideosGrid } from "./styles";
+import { useMemo } from "react";
 
 const favoritesManager = new FavoritesManager();
-
-const VideosGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, 320px);
-  gap: 20px;
-  justify-content: center;
-  padding: 20px;
-  overflow-x: hidden;
-`;
 
 interface Video {
   id: string;
@@ -63,7 +55,7 @@ const VideoThumbnail: React.FC<Video> = ({ id, title, thumbnailUrl, channelTitle
 };
 
 export const Profile = () => {
-    const favoriteIds = favoritesManager.getFavorites();
+    const favoriteIds = useMemo(() => favoritesManager.getFavorites(), []);
     const { videos } = useFetchFavoriteVideos(favoriteIds);
 
     return (

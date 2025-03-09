@@ -36,22 +36,30 @@ export const VideoPlayer: React.FC = () => {
     const fetchVideoDetails = async () => {
       try {
         const apiKey = import.meta.env.VITE_YT_API_KEY;
-        const response = await fetch(
+        
+        const videoDetailsresponse = await fetch(
           `https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics&id=${videoId}&key=${apiKey}`
         );
-        const data = await response.json();
-        const video = data.items[0];
-        console.log(data);
+        const videoDetails = await videoDetailsresponse.json();
+        const video = videoDetails.items[0];
+        const channelId = video.snippet.channelId;
+
+        const channelResponse = await fetch(
+          `https://www.googleapis.com/youtube/v3/channels?part=snippet&id=${channelId}&key=${apiKey}`
+        );
+        const channelData = await channelResponse.json();
+        const channelAvatar = channelData.items[0]?.snippet.thumbnails.default.url || "";
+
         setVideoData({
           title:         video.snippet.title,
           channelTitle:  video.snippet.channelTitle,
-          channelAvatar: video.snippet.thumbnails.default.url,
+          channelAvatar: channelAvatar,
           views:         video.statistics.viewCount.toLocaleString(),
-          likes:         video.statistics.likeCount ? video.statistics.likeCount.toLocaleString() : '0',
-          commentCount:  video.statistics.commentCount ? video.statistics.commentCount.toLocaleString() : '0',
+          likes:         video.statistics.likeCount ? video.statistics.likeCount.toLocaleString() : "0",
+          commentCount:  video.statistics.commentCount ? video.statistics.commentCount.toLocaleString() : "0",
         });
       } catch (error) {
-        console.error('Error fetching video details:', error);
+        console.error("Error fetching video details:", error);
       }
     };
 
