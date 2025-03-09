@@ -63,18 +63,30 @@ export const TrendingVideosPage: React.FC = () => {
         `https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics&chart=mostPopular&regionCode=US&maxResults=12&key=${apiKey}${pageToken ? `&pageToken=${pageToken}` : ''}`
       );
       const data = await response.json();
-
+  
+      const channelIds = data.items.map((item: any) => item.snippet.channelId).join(',');
+  
+      const channelResponse = await fetch(
+        `https://www.googleapis.com/youtube/v3/channels?part=snippet&id=${channelIds}&key=${apiKey}`
+      );
+      const channelData = await channelResponse.json();
+  
+      const channelAvatars: Record<string, string> = {};
+      channelData.items.forEach((channel: any) => {
+        channelAvatars[channel.id] = channel.snippet.thumbnails.default.url;
+      });
+  
       const videosData = data.items.map((item: any) => ({
         id:            item.id,
         title:         item.snippet.title,
         thumbnailUrl:  item.snippet.thumbnails.medium.url,
         channelTitle:  item.snippet.channelTitle,
-        channelAvatar: item.snippet.channelThumbnailUrl || item.snippet.thumbnails.high.url,
+        channelAvatar: channelAvatars[item.snippet.channelId] || '',
         views:         item.statistics.viewCount.toLocaleString(),
         likes:         item.statistics.likeCount ? item.statistics.likeCount.toLocaleString() : '0',
         commentCount:  item.statistics.commentCount ? item.statistics.commentCount.toLocaleString() : '0',
       }));
-
+  
       setVideos(videosData);
       setNextPageToken(data.nextPageToken || null);
       setPrevPageToken(data.prevPageToken || null);
@@ -82,6 +94,7 @@ export const TrendingVideosPage: React.FC = () => {
       console.error('Error fetching trending videos:', error);
     }
   };
+  
 
   useEffect(() => {
     fetchTrendingVideos();
