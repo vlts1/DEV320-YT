@@ -5,8 +5,8 @@ import { useNavigate } from "react-router-dom";
 import { ChannelAvatar, ChannelInfo, LikesDislikes, ThumbnailContainer, ThumbnailImage, VideoStats, VideoTitle } from "../styles";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCommentAlt } from "@fortawesome/free-regular-svg-icons";
-import { useEffect, useState } from "react";
 import styled from "styled-components";
+import { useFetchFavoriteVideos } from "../hooks/useFetchFavoriteVideos";
 
 const favoritesManager = new FavoritesManager();
 
@@ -63,50 +63,8 @@ const VideoThumbnail: React.FC<Video> = ({ id, title, thumbnailUrl, channelTitle
 };
 
 export const Profile = () => {
-    const [videos, setVideos] = useState<Video[]>([]);
-
-    useEffect(() => {
-      const fetchFavoriteVideos = async () => {
-        const apiKey = import.meta.env.VITE_YT_API_KEY;
-        const favoriteIds = favoritesManager.getFavorites();
-        if (favoriteIds.length === 0) return;
-
-        try {
-          const response = await fetch(
-            `https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics&id=${favoriteIds.join(',')}&key=${apiKey}`
-          );
-          const data = await response.json();
-
-          const channelIds = data.items.map((item: any) => item.snippet.channelId).join(',');
-          const channelResponse = await fetch(
-            `https://www.googleapis.com/youtube/v3/channels?part=snippet&id=${channelIds}&key=${apiKey}`
-          );
-          const channelData = await channelResponse.json();
-
-          const channelAvatars: Record<string, string> = {};
-          channelData.items.forEach((channel: any) => {
-            channelAvatars[channel.id] = channel.snippet.thumbnails.default.url;
-          });
-
-          const videosData = data.items.map((item: any) => ({
-            id:            item.id,
-            title:         item.snippet.title,
-            thumbnailUrl:  item.snippet.thumbnails.medium.url,
-            channelTitle:  item.snippet.channelTitle,
-            channelAvatar: channelAvatars[item.snippet.channelId] || '',
-            views:         item.statistics.viewCount.toLocaleString(),
-            likes:         item.statistics.likeCount ? item.statistics.likeCount.toLocaleString() : '0',
-            commentCount:  item.statistics.commentCount ? item.statistics.commentCount.toLocaleString() : '0',
-          }));
-
-          setVideos(videosData);
-        } catch (error) {
-          console.error('Error fetching favorite videos:', error);
-        }
-      };
-
-      fetchFavoriteVideos();
-    }, []);  
+    const favoriteIds = favoritesManager.getFavorites();
+    const { videos } = useFetchFavoriteVideos(favoriteIds);
 
     return (
         <div>
