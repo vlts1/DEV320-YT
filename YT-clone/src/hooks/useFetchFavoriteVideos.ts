@@ -18,8 +18,6 @@ export const useFetchFavoriteVideos = (videoIds: string[]) => {
           `https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics&id=${videoIds.join(",")}&key=${apiKey}`
         );
         const data = await response.json();
-        if (!data.items) throw new Error("Failed to fetch favorite videos");
-
         const channelIds = data.items.map((item: any) => item.snippet.channelId).join(",");
 
         const channelResponse = await fetch(

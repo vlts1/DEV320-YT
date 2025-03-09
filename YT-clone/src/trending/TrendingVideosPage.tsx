@@ -1,5 +1,4 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { faCommentAlt, faFireFlameCurved, faThumbsUp } from '@fortawesome/free-solid-svg-icons';
 import { PageTitle, PageTitleIcon } from '../styles';
@@ -40,17 +39,6 @@ const VideoThumbnail: React.FC<VideoThumbnailProps> = ({ id, title, thumbnailUrl
     </ThumbnailContainer>
   );
 };
-
-interface Video {
-  id: string;
-  title: string;
-  thumbnailUrl: string;
-  channelTitle: string;
-  channelAvatar: string;
-  views: string;
-  likes: string;
-  commentCount: string;
-}
 
 export const TrendingVideosPage: React.FC = () => {
   const { videos, nextPageToken, prevPageToken, fetchTrendingVideos } = useFetchTrendingVideos();

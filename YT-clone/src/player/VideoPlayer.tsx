@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
-import styled from 'styled-components';
 import { faCheck, faCommentAlt, faStar, faThumbsUp } from '@fortawesome/free-solid-svg-icons';
 import { useParams } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { FavoritesManager } from '../FavoritesManager';
-import { PageContainer, VideoTitle, VideoStats, LikesComments, Button, ChannelInfo, ChannelAvatar, CommentsContainer, CommentHeader, CommentAvatar, PaginationControls } from './styles';
+import { PageContainer, VideoTitle, VideoStats, LikesComments, Button, ChannelInfo, ChannelAvatar, CommentsContainer, CommentHeader, CommentAvatar, PaginationControls, VideoFrame,Comment } from './styles';
+import { useFetchComments } from '../hooks/useFetchComments';
 
 interface VideoData {
   title: string;
@@ -15,36 +15,11 @@ interface VideoData {
   commentCount: string;
 }
 
-interface CommentData {
-  id: string;
-  author: string;
-  authorAvatar: string;
-  text: string;
-}
-
-const VideoFrame = styled.iframe`
-  width: 80%;
-  max-width: 1200px;
-  height: 450px;
-  border: none;
-  border-radius: 8px;
-  margin-top: 20px;
-`;
-
-const Comment = styled.div`
-  background-color: #222;
-  padding: 10px;
-  border-radius: 5px;
-  margin-bottom: 10px;
-`;
-
 export const VideoPlayer: React.FC = () => {
   const favoritesManager = new FavoritesManager();
 
   const { videoId } = useParams<{ videoId: string }>();
   const [videoData, setVideoData] = useState<VideoData | null>(null);
-  const [comments, setComments] = useState<CommentData[]>([]);
-  const [nextPageToken, setNextPageToken] = useState<string | null>(null);
 
   const [isFavorite, setIsFavorite] = useState(() => 
     favoritesManager.getFavorites().includes(videoId!)
@@ -54,6 +29,8 @@ export const VideoPlayer: React.FC = () => {
     favoritesManager.toggleFavorite(videoId!);
     setIsFavorite(favoritesManager.getFavorites().includes(videoId!));
   };
+
+  const { comments, nextPageToken, fetchMoreComments } = useFetchComments(videoId!);
 
   useEffect(() => {
     const fetchVideoDetails = async () => {
@@ -66,45 +43,19 @@ export const VideoPlayer: React.FC = () => {
         const video = data.items[0];
         console.log(data);
         setVideoData({
-          title: video.snippet.title,
-          channelTitle: video.snippet.channelTitle,
+          title:         video.snippet.title,
+          channelTitle:  video.snippet.channelTitle,
           channelAvatar: video.snippet.thumbnails.default.url,
-          views: video.statistics.viewCount.toLocaleString(),
-          likes: video.statistics.likeCount ? video.statistics.likeCount.toLocaleString() : '0',
-          commentCount: video.statistics.commentCount ? video.statistics.commentCount.toLocaleString() : '0',
+          views:         video.statistics.viewCount.toLocaleString(),
+          likes:         video.statistics.likeCount ? video.statistics.likeCount.toLocaleString() : '0',
+          commentCount:  video.statistics.commentCount ? video.statistics.commentCount.toLocaleString() : '0',
         });
       } catch (error) {
         console.error('Error fetching video details:', error);
       }
     };
 
-    const fetchComments = async (pageToken?: string) => {
-      try {
-        const apiKey = import.meta.env.VITE_YT_API_KEY;
-        const response = await fetch(
-          `https://www.googleapis.com/youtube/v3/commentThreads?part=snippet&videoId=${videoId}&maxResults=5&key=${apiKey}${pageToken ? `&pageToken=${pageToken}` : ''}`
-        );
-        const data = await response.json();
-        
-        if (response.status === 403) {
-          setComments([{ id: 'error', author: 'Error', authorAvatar: '', text: 'Comments are disabled for this video.' }]);
-          return;
-        }
-
-        setComments(prevComments => [...prevComments, ...data.items.map((item: any) => ({
-          id: item.id,
-          author: item.snippet.topLevelComment.snippet.authorDisplayName,
-          authorAvatar: item.snippet.topLevelComment.snippet.authorProfileImageUrl,
-          text: item.snippet.topLevelComment.snippet.textDisplay,
-        }))]);
-        setNextPageToken(data.nextPageToken || null);
-      } catch (error) {
-        console.error('Error fetching comments:', error);
-      }
-    };
-
     fetchVideoDetails();
-    fetchComments();
   }, [videoId]);
 
   return (
@@ -141,24 +92,6 @@ export const VideoPlayer: React.FC = () => {
             <PaginationControls>
             <Button onClick={() => {
                 if (nextPageToken) {
-                  const fetchMoreComments = async () => {
-                    try {
-                      const apiKey = import.meta.env.VITE_YT_API_KEY;
-                      const response = await fetch(
-                        `https://www.googleapis.com/youtube/v3/commentThreads?part=snippet&videoId=${videoId}&maxResults=5&pageToken=${nextPageToken}&key=${apiKey}`
-                      );
-                      const data = await response.json();
-                      setComments(prevComments => [...prevComments, ...data.items.map((item: any) => ({
-                        id: item.id,
-                        author: item.snippet.topLevelComment.snippet.authorDisplayName,
-                        authorAvatar: item.snippet.topLevelComment.snippet.authorProfileImageUrl,
-                        text: item.snippet.topLevelComment.snippet.textDisplay,
-                      }))]);
-                      setNextPageToken(data.nextPageToken || null);
-                    } catch (error) {
-                      console.error('Error fetching more comments:', error);
-                    }
-                  };
                   fetchMoreComments();
                 }
               }} disabled={!nextPageToken || comments[0].id === "error"}>Load More</Button>

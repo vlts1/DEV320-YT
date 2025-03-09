@@ -110,3 +110,19 @@ export const Button = styled.button`
     cursor: not-allowed;
   }
 `;
+
+export const VideoFrame = styled.iframe`
+  width: 80%;
+  max-width: 1200px;
+  height: 450px;
+  border: none;
+  border-radius: 8px;
+  margin-top: 20px;
+`;
+
+export const Comment = styled.div`
+  background-color: #222;
+  padding: 10px;
+  border-radius: 5px;
+  margin-bottom: 10px;
+`;

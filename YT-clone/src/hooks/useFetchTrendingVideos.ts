@@ -18,8 +18,6 @@ export const useFetchTrendingVideos = () => {
         `https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics&chart=mostPopular&regionCode=US&maxResults=12&key=${apiKey}${pageToken ? `&pageToken=${pageToken}` : ""}`
       );
       const data = await response.json();
-      if (!data.items) throw new Error("Failed to fetch trending videos");
-
       const channelIds = data.items.map((item: any) => item.snippet.channelId).join(",");
 
       const channelResponse = await fetch(
